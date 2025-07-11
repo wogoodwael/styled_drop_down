@@ -16,6 +16,7 @@ class StyledDropDown extends StatefulWidget {
   final bool? itemIsImage;
   final Color? activeColorbtn;
   final Color? fillColorbtn;
+  final Color? dropDownBodyColor;
   final TextStyle? labelStyle;
   final TextStyle? itemTextStyle;
   final TextStyle? valueTextStyle;
@@ -35,6 +36,17 @@ class StyledDropDown extends StatefulWidget {
   /// Right padding for the dropdown menu.
   final double menuRightPadding;
 
+  /// Optional: Provide a custom builder for each dropdown item.
+  /// If null, default rendering (radio+text/image) is used.
+  final Widget Function(BuildContext context, String item, bool selected)?
+  itemBuilder;
+
+  /// Whether the dropdown selection is required.
+  final bool isRequired;
+
+  /// Optional: Custom error message when required and not selected.
+  final String? requiredErrorText;
+
   const StyledDropDown({
     super.key,
     this.label,
@@ -44,6 +56,7 @@ class StyledDropDown extends StatefulWidget {
     this.maxHeight = 300,
     this.menuRightPadding = 5.0,
     this.mainContainerColor = Colors.white,
+    this.dropDownBodyColor = Colors.white,
     this.mainContainerRaduis = const BorderRadius.all(Radius.circular(8)),
     this.mainContainerBorder = const Border.fromBorderSide(
       BorderSide(color: Color(0xFFE0E0E0)),
@@ -55,7 +68,12 @@ class StyledDropDown extends StatefulWidget {
     this.itemIsImage,
     this.activeColorbtn,
     this.fillColorbtn,
-    this.labelStyle, this.itemTextStyle, this.valueTextStyle
+    this.labelStyle,
+    this.itemTextStyle,
+    this.valueTextStyle,
+    this.itemBuilder,
+    this.isRequired = false,
+    this.requiredErrorText,
   });
 
   @override
@@ -67,6 +85,8 @@ class _StyledDropDownState extends State<StyledDropDown> {
   bool _isOpen = false;
   OverlayEntry? _overlayEntry;
 
+  String? _errorText;
+
   @override
   void initState() {
     super.initState();
@@ -75,6 +95,31 @@ class _StyledDropDownState extends State<StyledDropDown> {
       debugPrint(
         'Warning: CustomDropdown value "${widget.value}" is not in items list.',
       );
+    }
+    _validate();
+  }
+
+  @override
+  void didUpdateWidget(covariant StyledDropDown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _validate();
+  }
+
+  void _validate() {
+    if (widget.isRequired) {
+      if (widget.value.isEmpty || !widget.items.contains(widget.value)) {
+        setState(() {
+          _errorText = widget.requiredErrorText ?? 'This field is required';
+        });
+      } else {
+        setState(() {
+          _errorText = null;
+        });
+      }
+    } else {
+      setState(() {
+        _errorText = null;
+      });
     }
   }
 
@@ -87,15 +132,24 @@ class _StyledDropDownState extends State<StyledDropDown> {
 
   @override
   Widget build(BuildContext context) {
+    final bool showError = _errorText != null && _errorText!.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.label != null && widget.label!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
-            child: Text(
-              widget.label!,
-              style:widget. labelStyle ?? Theme.of(context).textTheme.labelMedium,
+            child: Row(
+              children: [
+                Text(
+                  widget.label!,
+                  style:
+                      widget.labelStyle ??
+                      Theme.of(context).textTheme.labelMedium,
+                ),
+                if (widget.isRequired)
+                  const Text(' *', style: TextStyle(color: Colors.red)),
+              ],
             ),
           ),
         CompositedTransformTarget(
@@ -121,7 +175,9 @@ class _StyledDropDownState extends State<StyledDropDown> {
                       )
                       : Text(
                         widget.value,
-                        style:widget.valueTextStyle?? Theme.of(context).textTheme.bodyMedium,
+                        style:
+                            widget.valueTextStyle ??
+                            Theme.of(context).textTheme.bodyMedium,
                       ),
                   widget.dropIcon ?? const Icon(Icons.keyboard_arrow_down),
                 ],
@@ -129,6 +185,14 @@ class _StyledDropDownState extends State<StyledDropDown> {
             ),
           ),
         ),
+        if (showError)
+          Padding(
+            padding: const EdgeInsets.only(top: 6.0, left: 4.0),
+            child: Text(
+              _errorText!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
       ],
     );
   }
@@ -176,7 +240,7 @@ class _StyledDropDownState extends State<StyledDropDown> {
                           ),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: widget.dropDownBodyColor,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Directionality(
@@ -186,49 +250,73 @@ class _StyledDropDownState extends State<StyledDropDown> {
                                 shrinkWrap: true,
                                 children:
                                     widget.items.map((item) {
-                                      return Container(
-                                        height: widget.itemContainerHight,
-                                        color: widget.itemContainerColor,
-                                        margin: const EdgeInsets.symmetric(
-                                          vertical: 5,
-                                          horizontal: 5,
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                            right: 5.0,
-                                            left: 5
+                                      final bool selected =
+                                          item == widget.value;
+                                      Widget child;
+                                      if (widget.itemBuilder != null) {
+                                        child = widget.itemBuilder!(
+                                          context,
+                                          item,
+                                          selected,
+                                        );
+                                      } else {
+                                        child = Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            // Show radio only if itemBuilder is not provided
+                                            Radio<String>(
+                                              value: item,
+                                              groupValue: widget.value,
+                                              onChanged:
+                                                  null, // handled by GestureDetector
+                                              activeColor:
+                                                  widget.activeColorbtn ??
+                                                  Colors.blue,
+                                              fillColor:
+                                                  WidgetStateProperty.all(
+                                                    widget.fillColorbtn ??
+                                                        Colors.blue,
+                                                  ),
+                                            ),
+                                            widget.itemIsImage == true
+                                                ? Image.asset(
+                                                  item,
+                                                  width: 50,
+                                                  height: 50,
+                                                  fit: BoxFit.cover,
+                                                )
+                                                : Text(
+                                                  item,
+                                                  style:
+                                                      widget.itemTextStyle ??
+                                                      Theme.of(
+                                                        context,
+                                                      ).textTheme.bodyMedium,
+                                                ),
+                                          ],
+                                        );
+                                      }
+                                      return GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () {
+                                          widget.onChanged(item);
+                                          _toggleDropdown();
+                                          _validate();
+                                        },
+                                        child: Container(
+                                          height: widget.itemContainerHight,
+                                          color: widget.itemContainerColor,
+                                          margin: const EdgeInsets.symmetric(
+                                            vertical: 5,
+                                            horizontal: 5,
                                           ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Radio<String>(
-                                                value: item,
-                                                groupValue: widget.value,
-                                                onChanged: (String? value) {
-                                                  if (value != null) {
-                                                    widget.onChanged(value);
-                                                    _toggleDropdown();
-                                                  }
-                                                },
-                                                activeColor:
-                                                    widget.activeColorbtn ??
-                                                    Colors.blue,
-                                                fillColor:
-                                                    WidgetStateProperty.all(
-                                                      widget.fillColorbtn ??
-                                                          Colors.blue,
-                                                    ),
-                                              ),
-                                              widget.itemIsImage == true
-                                                  ? Image.asset(
-                                                    item,
-                                                    width: 50,
-                                                    height: 50,
-                                                    fit: BoxFit.cover,
-                                                  )
-                                                  : Text(item , style: widget.itemTextStyle??Theme.of(context).textTheme.bodyMedium,),
-                                            ],
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 5.0,
+                                              left: 5,
+                                            ),
+                                            child: child,
                                           ),
                                         ),
                                       );

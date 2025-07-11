@@ -38,6 +38,21 @@ class _HomePageState extends State<HomePage> {
            Padding(
             padding: const EdgeInsets.all(16.0),
             child: StyledDropDown(
+              dropDownBodyColor: Colors.pink.shade100,
+              itemContainerColor: Colors.white,
+              isRequired: true,
+              requiredErrorText: "This field is required ",
+              //customize row
+              itemBuilder: (context, item, selected) {
+                return Row(
+                  children: [
+                    SizedBox(width: 8),
+                    Text(item.toString()),
+                    Spacer(),
+                    selected ? Icon(Icons.check) : SizedBox(),
+                  ],
+                );
+              },
               label: 'Select an option', 
               value: selected,
               items: items,

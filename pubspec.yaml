@@ -1,6 +1,6 @@
 name: styled_drop_down
 description: "A highly customizable dropdown widget for Flutter that displays a menu in an overlay with radio button selection"
-version: 1.0.0
+version: 1.0.1
 homepage: "https://github.com/wogoodwael/styled_drop_down.git"
 Author: "Wogood wael "
 
@@ -15,6 +15,8 @@ screenshots:
     path: "screenshots/image3.png"
   - description: 'StyledDropDown Example 4'
     path: "screenshots/image4.png"
+  - description: 'StyledDropDown Example 5'
+    path: "screenshots/img5.png"
 
 
 environment:

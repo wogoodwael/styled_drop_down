@@ -13,6 +13,8 @@ Here are some screenshots of the application:
 | ![Screenshot 1](screenshots/image1.png) | ![Screenshot 2](screenshots/image2.png) |
 | Screenshot 3 | Screenshot 4 |
 | ![Screenshot 3](screenshots/image3.png) | ![Screenshot 4](screenshots/image4.png) |
+| Screenshot 5 |
+| ![Screenshot 5](screenshots/img5.png) | 
 
 
 ## Features
@@ -23,6 +25,11 @@ Here are some screenshots of the application:
 - Customizable dropdown menu height and positioning
 - RTL and LTR text direction support
 - Overlay-based dropdown that doesn't interfere with other UI elements
+- Validation to ensure the selected value is present in the items list.
+- Support for custom error messages when a required selection is not made.
+- ItemBuilder support for custom dropdown item rendering.
+- Selected item by the full row not only button 
+
 
 
 ## Installation
@@ -31,7 +38,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  styled_dropdown: ^1.0.0
+  styled_dropdown: ^1.0.1
 ```
 
 Then run:
@@ -67,11 +74,25 @@ StyledDropDown(
   label: 'Choose a color',
   value: selectedColor,
   items: colorOptions,
+    //customize row 
+  itemBuilder: (context, item, selected) {
+   return Row(
+   children: [
+   SizedBox(width: 8),
+   Text(item.toString()),
+   Spacer(),
+   selected ? Icon(Icons.check) : SizedBox(),
+    ],
+    );
+   },
   onChanged: (value) {
     setState(() {
       selectedColor = value;
     });
   },
+  dropDownBodyColor: Colors.pink.shade100,
+  isRequired: true,
+  requiredErrorText: "This field is required ",
   mainContainerColor: Colors.grey[100],
   mainContainerRaduis: BorderRadius.circular(12),
   mainContainerBorder: Border.all(color: Colors.blue),
@@ -105,6 +126,10 @@ StyledDropDown(
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `label` | `String?` | `null` | Optional label displayed above the dropdown. |
+| `dropDownBodyColor` | `Color?` | `Colors.white` | Background Color for drop down container |
+| `isRequired` | `bool?` | `False` |validation to ensure the selected value is present in the items list |
+| `requiredErrorText` | `String?` | `null` |Custom error message when required and not selected. |
+| `itemBuilder` | `Widget Function(BuildContext context, String item, bool selected)?` | `null` | itemBuilder support for custom dropdown item rendering. |
 | `value` | `String` | Required | The currently selected value. |
 | `items` | `List<String>` | Required | The list of items to display in the dropdown menu. |
 | `onChanged` | `Function(String)` | Required | Callback invoked when a new item is selected. |
