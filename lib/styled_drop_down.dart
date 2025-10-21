@@ -32,6 +32,7 @@ class StyledDropDown extends StatefulWidget {
 
   /// Maximum height of the dropdown menu.
   final double maxHeight;
+  final double valueWidth;
 
   /// Right padding for the dropdown menu.
   final double menuRightPadding;
@@ -51,8 +52,10 @@ class StyledDropDown extends StatefulWidget {
     super.key,
     this.label,
     required this.value,
+    
     required this.items,
     required this.onChanged,
+    this.valueWidth=200,
     this.maxHeight = 300,
     this.menuRightPadding = 5.0,
     this.mainContainerColor = Colors.white,
@@ -173,11 +176,14 @@ class _StyledDropDownState extends State<StyledDropDown> {
                         height: 50,
                         fit: BoxFit.cover,
                       )
-                      : Text(
-                        widget.value,
-                        style:
-                            widget.valueTextStyle ??
-                            Theme.of(context).textTheme.bodyMedium,
+                      : SizedBox(
+                        width:widget. valueWidth,
+                        child: Text(
+                          widget.value,
+                          style:
+                              widget.valueTextStyle ??
+                              Theme.of(context).textTheme.bodyMedium,
+                        ),
                       ),
                   widget.dropIcon ?? const Icon(Icons.keyboard_arrow_down),
                 ],

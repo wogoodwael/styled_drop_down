@@ -5,7 +5,7 @@
   "packages": [
     {
       "name": "styled_drop_down",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "dependencies": [
         "flutter"
       ],

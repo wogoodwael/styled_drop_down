@@ -18,3 +18,8 @@ Overlay-based dropdown that doesn't interfere with other UI elements
 - Added support for custom error messages when a required selection is not made.
 - Enhanced itemBuilder support for custom dropdown item rendering.
 - Selected item by the full row not only button 
+
+## 1.0.2
+
+### Changes
+- add value Text Width to avoid render flex 

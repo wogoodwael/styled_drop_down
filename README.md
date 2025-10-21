@@ -38,7 +38,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  styled_dropdown: ^1.0.1
+  styled_dropdown: ^1.0.2
 ```
 
 Then run:
